@@ -63,7 +63,7 @@ class OAuthEntryPoint implements AuthenticationEntryPointInterface
                 $request->getSession()->remove('_security.target_path');
             }
 
-            $authorizationUrl = $this->oauthProvider->getAuthorizationUrl($request);
+            $authorizationUrl = $this->oauthProvider->getAuthorizationUrl();
 
             return $this->httpUtils->createRedirectResponse($request, $authorizationUrl);
         }

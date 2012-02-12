@@ -19,7 +19,8 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException,
     Symfony\Component\Security\Http\HttpUtils,
     Symfony\Component\HttpFoundation\Request;
 
-use Knp\Bundle\OAuthBundle\Security\Http\OAuth\OAuthProviderInterface;
+use Knp\Bundle\OAuthBundle\Security\Http\OAuth\OAuthProviderInterface,
+    Knp\Bundle\OAuthBundle\Security\Http\OAuth\Response\PathUserResponse;
 
 /**
  * OAuthProvider
@@ -78,12 +79,11 @@ class OAuthProvider implements OAuthProviderInterface
     }
 
     /**
-     * @param Symfony\Component\HttpFoundation\Request $request
      * @return string
      */
-    public function getRedirectUri(Request $request)
+    public function getRedirectUri()
     {
-        return $this->httpUtils->createRequest($request, $this->getOption('check_path'))->getUri();
+        return $this->httpUtils->generateUrl($this->getOption('check_path'), true);
     }
 
     /**
@@ -125,10 +125,7 @@ class OAuthProvider implements OAuthProviderInterface
         return $response->getContent();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getUsername($accessToken)
+    public function getUserinfo($accessToken)
     {
         if ($this->getOption('infos_url') === null) {
             return $accessToken;
@@ -138,31 +135,38 @@ class OAuthProvider implements OAuthProviderInterface
             'access_token' => $accessToken
         ));
 
-        $userInfos    = json_decode($this->httpRequest($url), true);
-        $usernamePath = explode('.', $this->getOption('username_path'));
+        $response = $this->getUserResponseObject();
+        $response->setResponse($this->httpRequest($url));
 
-        $username     = $userInfos;
+        return $response;
+    }
 
-        foreach ($usernamePath as $path) {
-            if (!array_key_exists($path, $username)) {
-                throw new AuthenticationException(sprintf('Could not follow username path "%s" in OAuth provider response: %s', $this->getOption('username_path'), var_export($userInfos, true)));
-            }
-            $username = $username[$path];
-        }
+    public function getUserResponseObject($responseData)
+    {
+        $response = new PathUserResponse;
+        $response->setPaths(array('username_path', $this->getOption('username_path')));
 
-        return $username;
+        return $response;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getAuthorizationUrl(Request $request, array $extraParameters = array())
+    public function getUsername($accessToken)
+    {
+        return $this->getUserInfo($accessToken)->getUsername();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAuthorizationUrl(array $extraParameters = array(), $redirectUri = null, )
     {
         $parameters = array_merge($extraParameters, array(
             'response_type' => 'code',
             'client_id'     => $this->getOption('client_id'),
             'scope'         => $this->getOption('scope'),
-            'redirect_uri'  => $this->getRedirectUri($request),
+            'redirect_uri'  => null !== $redirectUri ? $redirectUri : $this->getRedirectUri(),
         ));
 
         return $this->getOption('authorization_url').'?'.http_build_query($parameters);
@@ -171,14 +175,14 @@ class OAuthProvider implements OAuthProviderInterface
     /**
      * {@inheritDoc}
      */
-    public function getAccessToken(Request $request, array $extraParameters = array())
+    public function getAccessToken($code, array $extraParameters = array(), $redirectUri = null)
     {
         $parameters = array_merge($extraParameters, array(
-            'code'          => $request->get('code'),
+            'code'          => $code,
             'grant_type'    => 'authorization_code',
             'client_id'     => $this->getOption('client_id'),
             'client_secret' => $this->getOption('secret'),
-            'redirect_uri'  => $this->getRedirectUri($request),
+            'redirect_uri'  => null !== $redirectUri ? $redirectUri : $this->getRedirectUri(),
         ));
 
         $url = $this->getOption('access_token_url').'?'.http_build_query($parameters);

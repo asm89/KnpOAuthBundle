@@ -43,7 +43,7 @@ class OAuthListener extends AbstractAuthenticationListener
      */
     protected function attemptAuthentication(Request $request)
     {
-        $accessToken = $this->oauthProvider->getAccessToken($request);
+        $accessToken = $this->oauthProvider->getAccessToken($request->query->get('code'));
 
         $token = new OAuthToken($accessToken);
 

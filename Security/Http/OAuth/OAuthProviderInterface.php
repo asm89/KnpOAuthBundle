@@ -31,18 +31,21 @@ interface OAuthProviderInterface
     /**
      * Returns the provider's authorization url
      *
-     * @param string $loginCheckUrl You should set that as your redirect_uri
      * @param array $extraParameters An array of parameters to add to the url
+     * @param string $redirectUri Optional redirect uri
+     *
      * @return string The authorization url
      */
-    function getAuthorizationUrl(Request $request, array $extraParameters = array());
+    function getAuthorizationUrl(array $extraParameters = array(), $redirectUri = null, )
 
     /**
      * Retrieve an access token for a given code
      *
      * @param string $code The code
      * @param array $extraParameters An array of parameters to add to the url
+     * @param string $redirectUri Optional redirect uri
+     *
      * @return string The access token
      */
-    function getAccessToken(Request $request, array $extraParameters = array());
+    function getAccessToken($code, array $extraParameters = array(), $redirectUri = null)
 }

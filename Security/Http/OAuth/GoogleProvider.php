@@ -36,14 +36,14 @@ class GoogleProvider extends OAuthProvider
     /**
      * {@inheritDoc}
      */
-    public function getAccessToken(Request $request, array $extraParameters = array())
+    public function getAccessToken($code, array $extraParameters = array(), $redirectUri = null)
     {
         $parameters = array_merge($extraParameters, array(
-            'code'          => $request->get('code'),
+            'code'          => $code,
             'grant_type'    => 'authorization_code',
             'client_id'     => $this->getOption('client_id'),
             'client_secret' => $this->getOption('secret'),
-            'redirect_uri'  => $this->getRedirectUri($request),
+            'redirect_uri'  => null !== $redirectUri ? $redirectUri : $this->getRedirectUri(),
         ));
 
         $url = $this->getOption('access_token_url');
