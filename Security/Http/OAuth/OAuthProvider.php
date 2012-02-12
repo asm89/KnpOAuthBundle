@@ -154,7 +154,7 @@ class OAuthProvider implements OAuthProviderInterface
      */
     public function getUsername($accessToken)
     {
-        return $this->getUserInfo($accessToken)->getUsername();
+        return $this->getUserinfo($accessToken)->getUsername();
     }
 
     /**

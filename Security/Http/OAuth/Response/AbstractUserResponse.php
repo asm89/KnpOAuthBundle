@@ -20,7 +20,7 @@ abstract class AbstractUserResponse implements UserResponseInterface
 
     public function getResponse()
     {
-        return $this->Response;
+        return $this->response;
     }
 
     public function setResponse($response)
