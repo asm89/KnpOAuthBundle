@@ -34,6 +34,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->fixXmlConfig('resource_owner')
             ->children()
+            ->scalarNode('firewall_name')->defaultValue(false)->end()
             ->arrayNode('resource_owners')
                 ->isRequired()
                 ->useAttributeAsKey('name')
@@ -41,13 +42,17 @@ class Configuration implements ConfigurationInterface
                     ->children()
                         ->scalarNode('access_token_url')
                             ->validate()
-                                ->ifTrue(function($v) { return empty($v); })
+                                ->ifTrue(function($v) {
+                                    return empty($v);
+                                })
                                 ->thenUnset()
                             ->end()
                         ->end()
                         ->scalarNode('authorization_url')
                             ->validate()
-                                ->ifTrue(function($v) { return empty($v); })
+                                ->ifTrue(function($v) {
+                                    return empty($v);
+                                })
                                 ->thenUnset()
                             ->end()
                         ->end()
@@ -61,7 +66,9 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('infos_url')
                             ->validate()
-                                ->ifTrue(function($v) { return empty($v); })
+                                ->ifTrue(function($v) {
+                                    return empty($v);
+                                })
                                 ->thenUnset()
                             ->end()
                         ->end()
@@ -70,7 +77,9 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('user_response_class')
                             ->validate()
-                                ->ifTrue(function($v) { return empty($v); })
+                                ->ifTrue(function($v) {
+                                    return empty($v);
+                                })
                                 ->thenUnset()
                             ->end()
                         ->end()
@@ -83,7 +92,9 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('username_path')
                             ->validate()
-                                ->ifTrue(function($v) { return empty($v); })
+                                ->ifTrue(function($v) {
+                                    return empty($v);
+                                })
                                 ->thenUnset()
                             ->end()
                         ->end()

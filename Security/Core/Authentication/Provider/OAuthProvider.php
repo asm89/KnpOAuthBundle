@@ -15,9 +15,9 @@ use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProvid
     Symfony\Component\Security\Core\Authentication\Token\TokenInterface,
     Symfony\Component\Security\Core\User\UserProviderInterface;
 
-use Knp\Bundle\OAuthBundle\OAuth\ResourceOwnerInterface,
-    Knp\Bundle\OAuthBundle\Security\Core\Authentication\Token\OAuthToken,
-    Knp\Bundle\OAuthBundle\Security\Exception\AccessTokenAwareExceptionInterface;
+use Knp\Bundle\OAuthBundle\Security\Core\Authentication\Token\OAuthToken,
+    Knp\Bundle\OAuthBundle\Security\Exception\OAuthAwareExceptionInterface,
+    Knp\Bundle\OAuthBundle\Security\Http\ResourceOwnerMap;
 
 /**
  * OAuthProvider
@@ -28,9 +28,9 @@ use Knp\Bundle\OAuthBundle\OAuth\ResourceOwnerInterface,
 class OAuthProvider implements AuthenticationProviderInterface
 {
     /**
-     * @var Knp\Bundle\OAuthBundle\OAuth\ResourceOwnerInterface
+     * @var ResourceOwnerMap
      */
-    private $resourceOwner;
+    private $resourceOwnerMap;
 
     /**
      * @var Symfony\Component\Security\Core\User\UserProviderInterface
@@ -38,13 +38,13 @@ class OAuthProvider implements AuthenticationProviderInterface
     private $userProvider;
 
     /**
-     * @param Symfony\Component\Security\Core\User\UserProviderInterface $userProvider
-     * @param Knp\Bundle\OAuthBundle\OAuth\ResourceOwnerInterface $resourceOwner
+     * @param UserProviderInterface $userProvider     User provider
+     * @param ResourceOwnerMap      $resourceOwnerMap Resource owner map
      */
-    public function __construct(UserProviderInterface $userProvider, ResourceOwnerInterface $resourceOwner)
+    public function __construct(UserProviderInterface $userProvider, ResourceOwnerMap $resourceOwnerMap)
     {
         $this->userProvider  = $userProvider;
-        $this->resourceOwner = $resourceOwner;
+        $this->resourceOwnerMap = $resourceOwnerMap;
     }
 
     /**
@@ -60,14 +60,17 @@ class OAuthProvider implements AuthenticationProviderInterface
      */
     public function authenticate(TokenInterface $token)
     {
-        $username = $this->resourceOwner
+        $resourceOwner = $this->resourceOwnerMap->getResourceOwnerById($token->getResourceOwnerId());
+
+        $username = $resourceOwner
             ->getUserInformation($token->getCredentials())
             ->getUsername();
 
         try {
             $user = $this->userProvider->loadUserByUsername($username);
-        } catch (AccessTokenAwareExceptionInterface $e) {
+        } catch (OAuthAwareExceptionInterface $e) {
             $e->setAccessToken($token->getCredentials());
+            $e->setResourceOwnerId($token->getResourceOwnerId());
             throw $e;
         }
 
