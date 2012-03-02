@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use HWI\SocialConnectBundle\Security\Exception\SocialAccountNotLinkedException;
 
 /**
  * SecurityController
